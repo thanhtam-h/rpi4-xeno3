@@ -1,0 +1,65 @@
+diff -ruN a/drivers/irqchip/irq-bcm2835.c b/drivers/irqchip/irq-bcm2835.c
+--- a/drivers/irqchip/irq-bcm2835.c	2019-11-30 00:10:29.015908100 +0900
++++ b/drivers/irqchip/irq-bcm2835.c	2019-11-30 00:13:37.574851000 +0900
+@@ -177,6 +177,11 @@
+ #ifdef CONFIG_ARM64
+ 	.irq_ack    = armctrl_ack_irq
+ #endif
++#ifdef CONFIG_IPIPE
++	.irq_hold = armctrl_mask_irq,
++	.irq_release = armctrl_unmask_irq,
++#endif
++	.flags	     = IRQCHIP_PIPELINE_SAFE,
+ };
+ 
+ static int armctrl_xlate(struct irq_domain *d, struct device_node *ctrlr,
+diff -ruN a/drivers/irqchip/irq-bcm2836.c b/drivers/irqchip/irq-bcm2836.c
+--- a/drivers/irqchip/irq-bcm2836.c	2019-11-30 00:10:29.015908100 +0900
++++ b/drivers/irqchip/irq-bcm2836.c	2019-11-30 00:21:24.936345500 +0900
+@@ -169,12 +169,12 @@
+ 
+ 		writel(1 << ipi, mailbox0);
+ 		dsb(sy);
+-		handle_IPI(ipi, regs);
++		ipipe_handle_multi_ipi(ipi, regs);
+ #endif
+ 	} else if (stat) {
+ 		u32 hwirq = ffs(stat) - 1;
+ 
+-		handle_domain_irq(intc.domain, hwirq, regs);
++		ipipe_handle_domain_irq(intc.domain, hwirq, regs);
+ 	}
+ }
+ 
+diff -ruN a/drivers/pci/controller/pcie-brcmstb.c b/drivers/pci/controller/pcie-brcmstb.c
+--- a/drivers/pci/controller/pcie-brcmstb.c	2019-11-30 00:10:29.580915600 +0900
++++ b/drivers/pci/controller/pcie-brcmstb.c	2019-12-12 18:06:29.521761893 +0900
+@@ -898,6 +898,7 @@
+ 	.name = "Brcm_MSI",
+ 	.irq_mask = pci_msi_mask_irq,
+ 	.irq_unmask = pci_msi_unmask_irq,
++	.flags = IRQCHIP_PIPELINE_SAFE,	//prevent kernel bug warn @HoTam
+ };
+ 
+ static struct msi_domain_info brcm_msi_domain_info = {
+@@ -930,7 +931,7 @@
+ 			virq = irq_find_mapping(msi->inner_domain, hwirq);
+ 			if (virq) {
+ 				if (msi->used & (1 << hwirq))
+-					generic_handle_irq(virq);
++					ipipe_handle_demuxed_irq(virq); //patched for xenomai, prevent kernel panic when usb devices are connected @HoTam
+ 				else
+ 					dev_info(dev, "unhandled MSI %d\n",
+ 						 hwirq);
+diff -ruN a/lib/dump_stack.c b/lib/dump_stack.c
+--- a/lib/dump_stack.c	2019-11-30 00:10:28.475900900 +0900
++++ b/lib/dump_stack.c	2019-11-30 00:25:14.663212300 +0900
+@@ -105,7 +105,7 @@
+ 	} else if (old == cpu) {
+ 		was_locked = 1;
+ 	} else {
+-		local_irq_restore(flags);
++		restore_local_irqs(flags);
+ 		/*
+ 		 * Wait for the lock to release before jumping to
+ 		 * atomic_cmpxchg() in order to mitigate the thundering herd
