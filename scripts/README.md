@@ -58,7 +58,7 @@ Prosprocessing
 	dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0
 	
 	**CPU affinity**
-	isolcpus=2,3 xenomai.supported_cpus=0xC
+	isolcpus=0,1 xenomai.supported_cpus=0x3
 	
 Test xenomai on rpi
 ------------      
