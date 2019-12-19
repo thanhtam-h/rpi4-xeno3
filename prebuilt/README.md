@@ -6,7 +6,7 @@ Download prebuilt kernel
 Download and transfer all files in this directory to rpi4:
 
      git clone https://github.com/thanhtam-h/rpi4-xeno3.git
-	 cd rpi4-xeno3/prebuit
+	 cd rpi4-xeno3/prebuilt
      
 Automatically deploy
 ------------
