@@ -10,4 +10,4 @@ cd ..
 sudo tar -xjvf xenomai-rpi4-deploy.tar.bz2 -C /
 sudo cp xenomai.conf /etc/ld.so.conf.d/
 sudo ldconfig
-sudo reboot
+#sudo reboot
