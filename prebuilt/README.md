@@ -24,16 +24,16 @@ Post processing
 	```
 In this step, you may see many errors or even strange printing, just ignore them, your kernel header will work fine. 
 
-2. Disable DWC features which may cause problem for ipipe kernel, add to the end of /boot/cmdline.txt:
+2. Disable DWC features which may cause problem for ipipe kernel, add to the end of /boot/cmdline.txt (on a **SINGLE** line)
 	```
 	dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0 
 	```
-3. CPU affinity, adding to the end of /boot/cmdline.txt file:
+3. CPU affinity, adding to the end of /boot/cmdline.txt file (on a **SINGLE** line)
 	```
 	isolcpus=0,1 xenomai.supported_cpus=0x3
 	```
 4. There is a big issue found on 4G RAM version raspberry pi 4, although LPAE (Large Physical Address Extensions) allows Linux 32 bit can access fully 4G memory, the pcie DMA controller can only access up to 3G RAM. This usually causes problem for USB hub (connected via pcie) especially when user set large GPU memory (GPU always use low memory portion). This become serious on ipipe kernel. 
-Workaround for this issue is to limit usable memory to 3G, add follow line to around first of /boot/config.txt file:
+Workaround for this issue is to limit usable memory to 3G, add follow line to around first of **/boot/config.txt** file:
 	```
 	total_mem=3072
 	```
