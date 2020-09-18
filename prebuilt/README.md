@@ -42,4 +42,4 @@ Workaround for this issue is to limit usable memory to 3G, add follow line to ar
 	total_mem=3072
 	```
 
-
+Finally, reboot raspberry pi.
