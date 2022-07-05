@@ -50,6 +50,7 @@ Workaround for this issue is to limit usable memory to 3G, add follow line to ar
 	```
 	total_mem=3072
 	```
+* OpenGL driver won't work with Xenomai on raspberry pi, in order to get HDMI display we should disable OpenGL driver, comment out line "dtoverlay=vc4-fkms-v3d" in config.txt file
 
 Finally, reboot raspberry pi.
 
